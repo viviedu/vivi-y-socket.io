@@ -47,9 +47,9 @@
     "build": "tsup",
     "dev": "tsup --watch --onSuccess \"node dist/server/server.js\"",
     "lint": "ts-standard && tsup",
-    "test": "npm run lint",
-    "example:server": "cd ./examples/server && npm install && npm run dev",
-    "example:client": "cd ./examples/react-example && npm install && npm run-script dev"
+    "test": "pnpm run lint",
+    "example:server": "cd ./examples/server && pnpm install && pnpm run dev",
+    "example:client": "cd ./examples/react-example && pnpm install && pnpm run-script dev"
   },
   "ts-standard": {
     "project": "./tsconfig.json",
@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "lib0": "^0.2.52",
-    "socket.io": "^4.5.1",
+    "socket.io": "^2.2.0",
     "socket.io-client": "^4.5.1",
     "y-leveldb": "^0.1.1",
     "y-protocols": "^1.0.5"
@@ -72,7 +72,8 @@
     "ts-standard": "^11.0.0",
     "tsup": "^6.2.2",
     "typescript": "^4.5.0",
-    "yjs": "^13.5.41"
+    "yjs": "^13.5.41",
+    "@types/socket.io": "^2.1.13"
   },
   "peerDependencies": {
     "yjs": "^13.5.6"

@@ -49,7 +49,7 @@ export class YSocketIO extends Observable<string> {
   /**
    * @type {Server}
    */
-  private readonly io: Server
+  private io: Server | null = null
   /**
    * @type {string | undefined | null}
    */
@@ -69,18 +69,15 @@ export class YSocketIO extends Observable<string> {
   /**
    * YSocketIO constructor.
    * @constructor
-   * @param {Server} io Server instance from Socket IO
    * @param {YSocketIOConfiguration} configuration (Optional) The YSocketIO configuration
    */
-  constructor (io: Server, configuration?: YSocketIOConfiguration) {
+  constructor (configuration?: YSocketIOConfiguration) {
     super()
 
-    this.io = io
+    this.configuration = configuration
 
     this._levelPersistenceDir = configuration?.levelPersistenceDir ?? process.env.YPERSISTENCE
     if (this._levelPersistenceDir != null) this.initLevelDB(this._levelPersistenceDir)
-
-    this.configuration = configuration
   }
 
   /**
@@ -90,9 +87,11 @@ export class YSocketIO extends Observable<string> {
    *  and adds the connection authentication middleware to the dynamics namespaces.
    *
    *  It also starts socket connection listeners.
+   * @param {Server} io Server instance from Socket IO
    * @type {() => void}
    */
-  public initialize (): void {
+  public initialize (io: Server): void {
+    this.io = io
     this.nsp = this.io.of(/^\/yjs\|.*$/)
 
     this.nsp.use(async (socket, next) => {
@@ -237,12 +236,34 @@ export class YSocketIO extends Observable<string> {
    */
   private readonly initSocketListeners = (socket: Socket, doc: Document): void => {
     socket.on('disconnect', async () => {
-      if ((await socket.nsp.allSockets()).size === 0) {
-        this.emit('all-document-connections-closed', [doc])
-        if (this.persistence != null) {
-          await this.persistence.writeState(doc.name, doc)
-          await doc.destroy()
-        }
+      // Socket.IO v2 compatibility
+      // In v2, we check the adapter for the number of clients in the namespace
+      // 'socket.nsp' refers to the dynamic namespace for this document
+      
+      const getClientCount = (): Promise<number> => {
+        return new Promise((resolve, reject) => {
+          if ((socket.nsp.adapter as any).clients) {
+              (socket.nsp.adapter as any).clients((err: any, clients: string[]) => {
+                  if (err) return reject(err);
+                  resolve(clients.length);
+              });
+          } else {
+              // Fallback for some v2 adapters or if clients() isn't available
+               resolve(Object.keys((socket.nsp as any).connected).length);
+          }
+        });
+      }
+      try {
+          const count = await getClientCount();
+          if (count === 0) {
+              this.emit('all-document-connections-closed', [doc])
+              if (this.persistence != null) {
+                  await this.persistence.writeState(doc.name, doc)
+                  await doc.destroy()
+              }
+          }
+      } catch (err) {
+          console.error('Error checking client count:', err);
       }
     })
   }
