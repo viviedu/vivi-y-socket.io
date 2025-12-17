@@ -60,7 +60,7 @@ export class Document extends Y.Doc {
    * @param {Namespace} namespace The namespace connection
    * @param {Callbacks} callbacks The document callbacks
    */
-  constructor (name: string, namespace: Namespace, callbacks?: Callbacks) {
+  constructor(name: string, namespace: Namespace, callbacks?: Callbacks) {
     super({ gc: gcEnabled })
     this.name = name
     this.namespace = namespace
@@ -114,7 +114,7 @@ export class Document extends Y.Doc {
    * Destroy the document and remove the listeners.
    * @type {() => Promise<void>}
    */
-  public async destroy (): Promise<void> {
+  public async destroy(): Promise<void> {
     if ((this.callbacks?.onDestroy) != null) {
       try {
         await this.callbacks.onDestroy(this)
@@ -124,7 +124,7 @@ export class Document extends Y.Doc {
     }
     this.awareness.off('update', this.onUpdateAwareness)
     this.off('update', this.onUpdateDoc)
-    this.namespace.disconnectSockets()
+    Object.values(this.namespace.connected).forEach(socket => socket.disconnect(true))
     super.destroy()
   }
 }

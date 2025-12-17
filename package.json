@@ -70,11 +70,12 @@
     "y-protocols": "^1.0.5"
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
+    "@types/socket.io": "^2.1.13",
     "ts-standard": "^11.0.0",
     "tsup": "^6.2.2",
     "typescript": "^4.5.0",
-    "yjs": "^13.5.41",
-    "@types/socket.io": "^2.1.13"
+    "yjs": "^13.5.41"
   },
   "peerDependencies": {
     "yjs": "^13.5.6"

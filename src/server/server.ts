@@ -2,7 +2,7 @@
 // This is used for 
 
 import http from 'http'
-import { Server, Socket } from 'socket.io'
+import socketIo, { Socket } from 'socket.io'
 
 import { YSocketIO } from './y-socket-io'
 
@@ -14,7 +14,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' })
   res.end(JSON.stringify({ ok: true }))
 })
-const io = new Server(server)
+const io = socketIo(server)
 
 const ysocketio = new YSocketIO({})
 
